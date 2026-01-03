@@ -51,6 +51,18 @@ document.addEventListener("click", (e) => {
     }
 });
 
+document.addEventListener("click", (e) => {
+    const target = e.target.closest("[data-page]");
+    if (!target) return;
+
+    e.preventDefault();
+
+    const page = target.dataset.page;
+    if (page) {
+        loadPage(page);
+    }
+});
+
 // ------------------------------
 // PAGE LOADING (Static HTML)
 // ------------------------------
@@ -80,11 +92,11 @@ async function loadPage(page) {
 }
 
 // Menu click handler
-document.querySelectorAll("aside nav a").forEach(link => {
-    link.addEventListener("click", () => {
-        loadPage(link.dataset.page);
-    });
-});
+//document.querySelectorAll("aside nav a").forEach(link => {
+//    link.addEventListener("click", () => {
+//        loadPage(link.dataset.page);
+//    });
+//});
 
 function initAshtothram108() {
     const list = document.getElementById("ashto108");
@@ -173,10 +185,19 @@ function initAshtothram108() {
         }
     }, { once: true });
 
+    // Landing page cards
+    document.addEventListener("click", (e) => {
+        const card = e.target.closest(".card[data-page]");
+        if (!card) return;
+
+        const page = card.dataset.page;
+        loadPage(page);
+    });
+
     render();
 }
 
 // ------------------------------
 // INITIAL LOAD
 // ------------------------------
-loadPage("welcome.html");
+loadPage("home.html");
