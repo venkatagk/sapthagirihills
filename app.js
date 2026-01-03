@@ -70,6 +70,10 @@ async function loadPage(page) {
             .querySelector(`aside nav a[data-page="${page}"]`)
             ?.classList.add("active");
 
+        // ✅ IMPORTANT: initialize page-specific logic
+        initAshtothram108();
+
+
     } catch (err) {
         content.innerHTML = "<p>⚠️ పేజీ లోడ్ కాలేదు</p>";
     }
@@ -81,6 +85,96 @@ document.querySelectorAll("aside nav a").forEach(link => {
         loadPage(link.dataset.page);
     });
 });
+
+function initAshtothram108() {
+    const list = document.getElementById("ashto108");
+    if (!list) return; // only run on that page
+
+    const items = Array.from(list.querySelectorAll("li"));
+    const countEl = document.getElementById("ashtoCount");
+    const nextBtn = document.getElementById("ashtoNextBtn");
+    const resetBtn = document.getElementById("ashtoResetBtn");
+    const autoChk = document.getElementById("ashtoAutoChk");
+    const autoSec = document.getElementById("ashtoAutoSec");
+
+    let idx =1;
+    let timer = null;
+
+    function render() {
+        items.forEach((li, i) => {
+            li.classList.toggle("done", i < idx);
+            li.classList.toggle("active", i === idx);
+        });
+        if (countEl) countEl.textContent = String(idx);
+        items[idx]?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    function next() {
+        if (idx >= items.length) return;
+        idx++;
+        if (idx > items.length) idx = items.length;
+        render();
+    }
+
+    function reset() {
+        idx = 1;
+        stopAuto();
+        render();
+    }
+
+    function startAuto() {
+        stopAuto();
+        const sec = Math.max(1, Math.min(30, parseInt(autoSec?.value || "3", 10)));
+        timer = setInterval(() => {
+            if (idx >= items.length) {
+                stopAuto();
+                return;
+            }
+            next();
+        }, sec * 1000);
+    }
+
+    function stopAuto() {
+        if (timer) clearInterval(timer);
+        timer = null;
+        if (autoChk) autoChk.checked = false;
+    }
+
+    // click any item = jump there
+    list.addEventListener("click", (e) => {
+        const li = e.target.closest("li");
+        if (!li) return;
+        const i = items.indexOf(li);
+        if (i >= 0) {
+            idx = i;
+            render();
+        }
+    });
+
+    nextBtn?.addEventListener("click", next);
+    resetBtn?.addEventListener("click", reset);
+
+    autoChk?.addEventListener("change", () => {
+        if (autoChk.checked) startAuto();
+        else stopAuto();
+    });
+
+    autoSec?.addEventListener("change", () => {
+        if (autoChk?.checked) startAuto();
+    });
+
+    // Space key = Next (when not typing in input)
+    document.addEventListener("keydown", (e) => {
+        const tag = (e.target?.tagName || "").toLowerCase();
+        if (tag === "input" || tag === "textarea") return;
+        if (e.code === "Space") {
+            e.preventDefault();
+            next();
+        }
+    }, { once: true });
+
+    render();
+}
 
 // ------------------------------
 // INITIAL LOAD
